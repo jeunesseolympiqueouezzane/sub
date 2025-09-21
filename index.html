@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Size Image Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #000;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        .image-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .full-size-image {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        .tape {
+            position: fixed;
+            width: 100vw;
+            height: 40px;
+            background-color: #000;
+            color: #5B9BD5;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            z-index: 2;
+            font-family: 'Brush Script MT', 'Comic Sans MS', cursive;
+            font-size: 22px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .tape-top {
+            top: 0;
+        }
+        
+        .tape-bottom {
+            bottom: 0;
+        }
+        
+        .scrolling-text {
+            white-space: nowrap;
+            animation: scroll-left 10s linear infinite;
+        }
+        
+        @keyframes scroll-left {
+            0% {
+                transform: translateX(0%);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+        
+        .cards-container {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 3;
+        }
+        
+        .card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #4169E1;
+            border-radius: 6px;
+            padding: 8px 12px;
+            min-width: 80px;
+            text-align: center;
+            color: #fff;
+            font-family: 'Brush Script MT', 'Comic Sans MS', cursive;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card-title {
+            font-size: 10px;
+            color: #4169E1;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+        
+        .card-value {
+            font-size: 12px;
+            color: #fff;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        
+        .card-label {
+            font-size: 8px;
+            color: #ccc;
+        }
+        
+        .top-buttons {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 4;
+        }
+        
+        .button-link {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .button-link:hover {
+            transform: scale(1.1);
+        }
+        
+        .button-img {
+            width: 60px;
+            height: auto;
+        }
+        
+        /* New decorative images - reduced and positioned away from elements */
+        .decorative-img {
+            position: fixed;
+            z-index: 3;
+            pointer-events: none;
+        }
+        
+        .money-center-left {
+            top: 45%;
+            left: 30px;
+            width: 80px;
+            opacity: 0.6;
+        }
+        
+        .always-up-center {
+            top: 35%;
+            left: 50%;
+            width: 90px;
+            opacity: 0.5;
+        }
+        
+        .subscribe-center-right {
+            top: 55%;
+            right: 40px;
+            width: 85px;
+            opacity: 0.7;
+        }
+        
+        .money-bottom-center {
+            bottom: 250px;
+            left: 35%;
+            width: 75px;
+            opacity: 0.4;
+        }
+        
+        .always-up-left-middle {
+            top: 25%;
+            left: 80px;
+            width: 70px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top right buttons -->
+    <div class="top-buttons">
+        <div class="button-link" id="x-button">
+            <img src="img/BUTTON1.png" alt="X" class="button-img">
+        </div>
+        <div class="button-link" id="dex-button">
+            <img src="img/BUTTON2.png" alt="DexScreener" class="button-img">
+        </div>
+    </div>
+
+    <!-- Decorative images scattered around - reduced and positioned away from elements -->
+    <img src="img/$200month.png" alt="$200 Month" class="decorative-img money-center-left">
+    <img src="img/$200month.png" alt="$200 Month" class="decorative-img money-bottom-center">
+    
+    <img src="img/Alwats goes up.png" alt="Always Goes Up" class="decorative-img always-up-center">
+    <img src="img/Alwats goes up.png" alt="Always Goes Up" class="decorative-img always-up-left-middle">
+    
+    <img src="img/Subscribe .png" alt="Subscribe" class="decorative-img subscribe-center-right">
+
+    <div class="tape tape-top">
+        <div class="scrolling-text">MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • </div>
+    </div>
+    
+    <div class="image-container">
+        <img src="img/bg.jpg" 
+             alt="Full Size Image" 
+             class="full-size-image">
+    </div>
+    
+    <div class="cards-container">
+        <div class="card">
+            <div class="card-title">MARKET CAP</div>
+            <div class="card-value" id="mcap-value">Loading...</div>
+            <div class="card-label">USD</div>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">TOTAL SUBSCRIPTIONS</div>
+            <div class="card-value" id="holders-value">Loading...</div>
+            <div class="card-label">Subscribers</div>
+        </div>
+    </div>
+    
+    <div class="tape tape-bottom">
+        <div class="scrolling-text">MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • </div>
+    </div>
+    
+    <script>
+        const TOKEN_MINT = '249sJtSBt9VnFnHHp94krmRZPExVP8h8LrNqrctSpump';
+        const HELIUS_API_KEY = '57c3fa84-17c7-4140-ae3e-418e117c9ad4';
+        const HELIUS_RPC_URL = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
+        
+        async function fetchTokenData() {
+            try {
+                console.log('Fetching token data for:', TOKEN_MINT);
+                
+                // Use Promise.all to fetch data in parallel for faster response
+                const [supplyResponse, holdersResponse] = await Promise.all([
+                    fetch(HELIUS_RPC_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            jsonrpc: '2.0',
+                            id: '1',
+                            method: 'getTokenSupply',
+                            params: [TOKEN_MINT]
+                        })
+                    }),
+                    fetch(HELIUS_RPC_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            jsonrpc: '2.0',
+                            id: 2,
+                            method: 'getProgramAccounts',
+                            params: [
+                                'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+                                {
+                                    encoding: 'jsonParsed',
+                                    filters: [
+                                        {
+                                            dataSize: 165
+                                        },
+                                        {
+                                            memcmp: {
+                                                offset: 0,
+                                                bytes: TOKEN_MINT
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        })
+                    })
+                ]);
+                
+                const [supplyData, holdersData] = await Promise.all([
+                    supplyResponse.json(),
+                    holdersResponse.json()
+                ]);
+                
+                console.log('Supply response:', supplyData);
+                console.log('Holders response:', holdersData);
+                
+                if (supplyData.error) {
+                    throw new Error('Token supply error: ' + supplyData.error.message);
+                }
+                
+                const totalSupply = supplyData.result?.value?.uiAmount || 0;
+                
+                let holderCount = 0;
+                if (holdersData.result) {
+                    // Count accounts with non-zero token balances
+                    const holders = holdersData.result.filter(account => {
+                        const tokenAmount = account.account.data.parsed.info.tokenAmount;
+                        return tokenAmount && parseFloat(tokenAmount.amount) > 0;
+                    });
+                    holderCount = holders.length;
+                    console.log(`Found ${holderCount} token holders`);
+                }
+                
+                // Get price with faster fallback
+                let currentPrice = 0;
+                
+                try {
+                    // Use fetch with timeout for faster response
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+                    
+                    const jupiterResponse = await fetch(`https://price.jup.ag/v6/price?ids=${TOKEN_MINT}`, {
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    
+                    const jupiterData = await jupiterResponse.json();
+                    currentPrice = jupiterData.data?.[TOKEN_MINT]?.price || 0;
+                    console.log('Jupiter price:', currentPrice);
+                } catch (e) {
+                    console.log('Jupiter failed or timeout, trying DexScreener...');
+                    
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 2000);
+                        
+                        const dexResponse = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${TOKEN_MINT}`, {
+                            signal: controller.signal
+                        });
+                        clearTimeout(timeoutId);
+                        
+                        const dexData = await dexResponse.json();
+                        if (dexData.pairs && dexData.pairs.length > 0) {
+                            currentPrice = parseFloat(dexData.pairs[0].priceUsd) || 0;
+                            console.log('DexScreener price:', currentPrice);
+                        }
+                    } catch (e) {
+                        console.log('DexScreener also failed');
+                        currentPrice = 0.000001; // Fallback
+                    }
+                }
+                
+                const marketCap = totalSupply * currentPrice;
+                
+                // Update UI immediately
+                const mcapElement = document.getElementById('mcap-value');
+                const holdersElement = document.getElementById('holders-value');
+                
+                if (mcapElement) {
+                    mcapElement.textContent = marketCap > 0 ? 
+                        `$${marketCap.toLocaleString(undefined, {maximumFractionDigits: 0})}` : 
+                        'N/A';
+                }
+                
+                if (holdersElement) {
+                    holdersElement.textContent = holderCount > 0 ? 
+                        holderCount.toLocaleString() : 
+                        'N/A';
+                }
+                
+                console.log('Final data:', {
+                    totalSupply,
+                    holderCount,
+                    currentPrice,
+                    marketCap
+                });
+                
+            } catch (error) {
+                console.error('Error fetching token data:', error);
+                const mcapElement = document.getElementById('mcap-value');
+                const holdersElement = document.getElementById('holders-value');
+                
+                if (mcapElement) mcapElement.textContent = 'Error';
+                if (holdersElement) holdersElement.textContent = 'Error';
+            }
+        }
+        
+        // Fetch data on load and refresh every 500ms (0.5 seconds)
+        fetchTokenData();
+        setInterval(fetchTokenData, 500);
+        
+        // Button click functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            // DexScreener button functionality (button1.png)
+            const xButton = document.getElementById('x-button');
+            if (xButton) {
+                xButton.addEventListener('click', () => {
+                    window.open('https://dexscreener.com', '_blank');
+                });
+            }
+
+            // X (Twitter) button functionality (button2.png)
+            const dexButton = document.getElementById('dex-button');
+            if (dexButton) {
+                dexButton.addEventListener('click', () => {
+                    window.open('https://x.com', '_blank');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
