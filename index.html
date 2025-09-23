@@ -62,7 +62,7 @@
         
         .scrolling-text {
             white-space: nowrap;
-            animation: scroll-left 10s linear infinite;
+            animation: scroll-left 14s linear infinite;
         }
         
         @keyframes scroll-left {
@@ -71,6 +71,19 @@
             }
             100% {
                 transform: translateX(-50%);
+            }
+        }
+        
+        .tape-bottom .scrolling-text {
+            animation: scroll-right 14s linear infinite;
+        }
+        
+        @keyframes scroll-right {
+            0% {
+                transform: translateX(-50%);
+            }
+            100% {
+                transform: translateX(0%);
             }
         }
         
@@ -231,17 +244,21 @@
     </div>
     
     <script>
-        const TOKEN_MINT = '249sJtSBt9VnFnHHp94krmRZPExVP8h8LrNqrctSpump';
+        const TOKEN_MINT = '4KUCN58TeExp9qrap64yuBPTmGmToV7R9h1p7HCZpump';
         const HELIUS_API_KEY = '57c3fa84-17c7-4140-ae3e-418e117c9ad4';
         const HELIUS_RPC_URL = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
+        
+        let cachedSupply = 0;
+        let lastPriceUpdate = 0;
         
         async function fetchTokenData() {
             try {
                 console.log('Fetching token data for:', TOKEN_MINT);
                 
-                // Use Promise.all to fetch data in parallel for faster response
-                const [supplyResponse, holdersResponse] = await Promise.all([
-                    fetch(HELIUS_RPC_URL, {
+                // Get supply less frequently since it doesn't change often
+                let totalSupply = cachedSupply;
+                if (cachedSupply === 0) {
+                    const supplyResponse = await fetch(HELIUS_RPC_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -250,8 +267,19 @@
                             method: 'getTokenSupply',
                             params: [TOKEN_MINT]
                         })
-                    }),
-                    fetch(HELIUS_RPC_URL, {
+                    });
+                    const supplyData = await supplyResponse.json();
+                    
+                    if (!supplyData.error) {
+                        totalSupply = supplyData.result?.value?.uiAmount || 0;
+                        cachedSupply = totalSupply; // Cache the supply
+                    }
+                }
+                
+                // Get holders data less frequently
+                const now = Date.now();
+                if (now - lastPriceUpdate > 1000) { // Update holders every 1 second
+                    const holdersResponse = await fetch(HELIUS_RPC_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -276,111 +304,85 @@
                                 }
                             ]
                         })
-                    })
-                ]);
-                
-                const [supplyData, holdersData] = await Promise.all([
-                    supplyResponse.json(),
-                    holdersResponse.json()
-                ]);
-                
-                console.log('Supply response:', supplyData);
-                console.log('Holders response:', holdersData);
-                
-                if (supplyData.error) {
-                    throw new Error('Token supply error: ' + supplyData.error.message);
-                }
-                
-                const totalSupply = supplyData.result?.value?.uiAmount || 0;
-                
-                let holderCount = 0;
-                if (holdersData.result) {
-                    // Count accounts with non-zero token balances
-                    const holders = holdersData.result.filter(account => {
-                        const tokenAmount = account.account.data.parsed.info.tokenAmount;
-                        return tokenAmount && parseFloat(tokenAmount.amount) > 0;
                     });
-                    holderCount = holders.length;
-                    console.log(`Found ${holderCount} token holders`);
+                    
+                    const holdersData = await holdersResponse.json();
+                    
+                    let holderCount = 0;
+                    if (holdersData.result) {
+                        const holders = holdersData.result.filter(account => {
+                            const tokenAmount = account.account.data.parsed.info.tokenAmount;
+                            return tokenAmount && parseFloat(tokenAmount.amount) > 0;
+                        });
+                        holderCount = holders.length;
+                    }
+                    
+                    // Update holders immediately
+                    const holdersElement = document.getElementById('holders-value');
+                    if (holdersElement) {
+                        holdersElement.textContent = holderCount > 0 ? 
+                            holderCount.toLocaleString() : 
+                            'N/A';
+                    }
+                    
+                    lastPriceUpdate = now;
                 }
                 
-                // Get price with faster fallback
+                // Get price data very frequently for market cap
                 let currentPrice = 0;
                 
                 try {
-                    // Use fetch with timeout for faster response
+                    // Ultra fast price fetch with very short timeout
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+                    const timeoutId = setTimeout(() => controller.abort(), 500); // 0.5 second timeout
                     
                     const jupiterResponse = await fetch(`https://price.jup.ag/v6/price?ids=${TOKEN_MINT}`, {
                         signal: controller.signal
                     });
                     clearTimeout(timeoutId);
                     
-                    const jupiterData = await jupiterResponse.json();
-                    currentPrice = jupiterData.data?.[TOKEN_MINT]?.price || 0;
-                    console.log('Jupiter price:', currentPrice);
+                    if (jupiterResponse.ok) {
+                        const jupiterData = await jupiterResponse.json();
+                        currentPrice = jupiterData.data?.[TOKEN_MINT]?.price || 0;
+                    }
                 } catch (e) {
-                    console.log('Jupiter failed or timeout, trying DexScreener...');
-                    
+                    // Quick fallback to DexScreener
                     try {
                         const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 2000);
+                        const timeoutId = setTimeout(() => controller.abort(), 500);
                         
                         const dexResponse = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${TOKEN_MINT}`, {
                             signal: controller.signal
                         });
                         clearTimeout(timeoutId);
                         
-                        const dexData = await dexResponse.json();
-                        if (dexData.pairs && dexData.pairs.length > 0) {
-                            currentPrice = parseFloat(dexData.pairs[0].priceUsd) || 0;
-                            console.log('DexScreener price:', currentPrice);
+                        if (dexResponse.ok) {
+                            const dexData = await dexResponse.json();
+                            if (dexData.pairs && dexData.pairs.length > 0) {
+                                currentPrice = parseFloat(dexData.pairs[0].priceUsd) || 0;
+                            }
                         }
                     } catch (e) {
-                        console.log('DexScreener also failed');
                         currentPrice = 0.000001; // Fallback
                     }
                 }
                 
                 const marketCap = totalSupply * currentPrice;
                 
-                // Update UI immediately
+                // Update market cap immediately
                 const mcapElement = document.getElementById('mcap-value');
-                const holdersElement = document.getElementById('holders-value');
-                
-                if (mcapElement) {
-                    mcapElement.textContent = marketCap > 0 ? 
-                        `$${marketCap.toLocaleString(undefined, {maximumFractionDigits: 0})}` : 
-                        'N/A';
+                if (mcapElement && marketCap > 0) {
+                    mcapElement.textContent = `$${marketCap.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
                 }
-                
-                if (holdersElement) {
-                    holdersElement.textContent = holderCount > 0 ? 
-                        holderCount.toLocaleString() : 
-                        'N/A';
-                }
-                
-                console.log('Final data:', {
-                    totalSupply,
-                    holderCount,
-                    currentPrice,
-                    marketCap
-                });
                 
             } catch (error) {
                 console.error('Error fetching token data:', error);
-                const mcapElement = document.getElementById('mcap-value');
-                const holdersElement = document.getElementById('holders-value');
-                
-                if (mcapElement) mcapElement.textContent = 'Error';
-                if (holdersElement) holdersElement.textContent = 'Error';
             }
         }
         
-        // Fetch data on load and refresh every 500ms (0.5 seconds)
+        // Fetch data on load and refresh every 200ms (0.2 seconds)
         fetchTokenData();
-        setInterval(fetchTokenData, 500);
+        setInterval(fetchTokenData, 200);
         
         // Button click functionality
         document.addEventListener('DOMContentLoaded', () => {
