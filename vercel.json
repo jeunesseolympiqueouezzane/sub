@@ -1,0 +1,35 @@
+{
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/jupiter/(.*)",
+      "destination": "https://price.jup.ag/v6/$1"
+    },
+    {
+      "source": "/api/dexscreener/(.*)",
+      "destination": "https://api.dexscreener.com/latest/dex/$1"
+    },
+    {
+      "source": "/api/helius/(.*)",
+      "destination": "https://mainnet.helius-rpc.com/?api-key=57c3fa84-17c7-4140-ae3e-418e117c9ad4"
+    }
+  ]
+}

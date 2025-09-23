@@ -244,9 +244,21 @@
     </div>
     
     <script>
-        const TOKEN_MINT = '4KUCN58TeExp9qrap64yuBPTmGmToV7R9h1p7HCZpump';
+        const TOKEN_MINT = 'GJAFwWjJ3vnTsrQVabjBVK2TYB1YtRCQXRDfDgUnpump';
         const HELIUS_API_KEY = '57c3fa84-17c7-4140-ae3e-418e117c9ad4';
-        const HELIUS_RPC_URL = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
+        
+        // Use proxy routes for Vercel deployment
+        const HELIUS_RPC_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`
+            : '/api/helius/';
+        
+        const JUPITER_API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'https://price.jup.ag/v6/price'
+            : '/api/jupiter/price';
+            
+        const DEXSCREENER_API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'https://api.dexscreener.com/latest/dex/tokens'
+            : '/api/dexscreener/tokens';
         
         let cachedSupply = 0;
         let lastPriceUpdate = 0;
@@ -258,113 +270,156 @@
                 // Get supply less frequently since it doesn't change often
                 let totalSupply = cachedSupply;
                 if (cachedSupply === 0) {
-                    const supplyResponse = await fetch(HELIUS_RPC_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            jsonrpc: '2.0',
-                            id: '1',
-                            method: 'getTokenSupply',
-                            params: [TOKEN_MINT]
-                        })
-                    });
-                    const supplyData = await supplyResponse.json();
-                    
-                    if (!supplyData.error) {
-                        totalSupply = supplyData.result?.value?.uiAmount || 0;
-                        cachedSupply = totalSupply; // Cache the supply
+                    try {
+                        const supplyResponse = await fetch(HELIUS_RPC_URL, {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            mode: 'cors',
+                            body: JSON.stringify({
+                                jsonrpc: '2.0',
+                                id: '1',
+                                method: 'getTokenSupply',
+                                params: [TOKEN_MINT]
+                            })
+                        });
+                        
+                        if (supplyResponse.ok) {
+                            const supplyData = await supplyResponse.json();
+                            
+                            if (!supplyData.error) {
+                                totalSupply = supplyData.result?.value?.uiAmount || 0;
+                                cachedSupply = totalSupply; // Cache the supply
+                                console.log('Supply fetched:', totalSupply);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Supply fetch error:', error);
+                        totalSupply = 1000000; // Fallback supply
                     }
                 }
                 
                 // Get holders data less frequently
                 const now = Date.now();
                 if (now - lastPriceUpdate > 1000) { // Update holders every 1 second
-                    const holdersResponse = await fetch(HELIUS_RPC_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            jsonrpc: '2.0',
-                            id: 2,
-                            method: 'getProgramAccounts',
-                            params: [
-                                'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-                                {
-                                    encoding: 'jsonParsed',
-                                    filters: [
-                                        {
-                                            dataSize: 165
-                                        },
-                                        {
-                                            memcmp: {
-                                                offset: 0,
-                                                bytes: TOKEN_MINT
+                    try {
+                        const holdersResponse = await fetch(HELIUS_RPC_URL, {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            mode: 'cors',
+                            body: JSON.stringify({
+                                jsonrpc: '2.0',
+                                id: 2,
+                                method: 'getProgramAccounts',
+                                params: [
+                                    'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+                                    {
+                                        encoding: 'jsonParsed',
+                                        filters: [
+                                            {
+                                                dataSize: 165
+                                            },
+                                            {
+                                                memcmp: {
+                                                    offset: 0,
+                                                    bytes: TOKEN_MINT
+                                                }
                                             }
-                                        }
-                                    ]
-                                }
-                            ]
-                        })
-                    });
-                    
-                    const holdersData = await holdersResponse.json();
-                    
-                    let holderCount = 0;
-                    if (holdersData.result) {
-                        const holders = holdersData.result.filter(account => {
-                            const tokenAmount = account.account.data.parsed.info.tokenAmount;
-                            return tokenAmount && parseFloat(tokenAmount.amount) > 0;
+                                        ]
+                                    }
+                                ]
+                            })
                         });
-                        holderCount = holders.length;
-                    }
-                    
-                    // Update holders immediately
-                    const holdersElement = document.getElementById('holders-value');
-                    if (holdersElement) {
-                        holdersElement.textContent = holderCount > 0 ? 
-                            holderCount.toLocaleString() : 
-                            'N/A';
+                        
+                        if (holdersResponse.ok) {
+                            const holdersData = await holdersResponse.json();
+                            
+                            let holderCount = 0;
+                            if (holdersData.result && !holdersData.error) {
+                                const holders = holdersData.result.filter(account => {
+                                    try {
+                                        const tokenAmount = account.account.data.parsed.info.tokenAmount;
+                                        return tokenAmount && parseFloat(tokenAmount.amount) > 0;
+                                    } catch (e) {
+                                        return false;
+                                    }
+                                });
+                                holderCount = holders.length;
+                                console.log('Holders fetched:', holderCount);
+                            }
+                            
+                            // Update holders immediately
+                            const holdersElement = document.getElementById('holders-value');
+                            if (holdersElement) {
+                                holdersElement.textContent = holderCount > 0 ? 
+                                    holderCount.toLocaleString() : 
+                                    'Loading...';
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Holders fetch error:', error);
+                        const holdersElement = document.getElementById('holders-value');
+                        if (holdersElement) {
+                            holdersElement.textContent = 'Error';
+                        }
                     }
                     
                     lastPriceUpdate = now;
                 }
                 
-                // Get price data very frequently for market cap
+                // Get price data using multiple methods with CORS support
                 let currentPrice = 0;
                 
+                // Try price from external APIs with better CORS handling
                 try {
-                    // Ultra fast price fetch with very short timeout
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 500); // 0.5 second timeout
-                    
-                    const jupiterResponse = await fetch(`https://price.jup.ag/v6/price?ids=${TOKEN_MINT}`, {
-                        signal: controller.signal
+                    // First try Jupiter with proxy
+                    const jupiterResponse = await fetch(`${JUPITER_API}?ids=${TOKEN_MINT}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                        },
+                        mode: 'cors'
                     });
-                    clearTimeout(timeoutId);
                     
                     if (jupiterResponse.ok) {
                         const jupiterData = await jupiterResponse.json();
                         currentPrice = jupiterData.data?.[TOKEN_MINT]?.price || 0;
+                        console.log('Jupiter price:', currentPrice);
                     }
                 } catch (e) {
-                    // Quick fallback to DexScreener
+                    console.log('Jupiter failed, trying DexScreener...');
+                    
                     try {
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 500);
-                        
-                        const dexResponse = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${TOKEN_MINT}`, {
-                            signal: controller.signal
+                        // Fallback to DexScreener with proxy
+                        const dexResponse = await fetch(`${DEXSCREENER_API}/${TOKEN_MINT}`, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                            },
+                            mode: 'cors'
                         });
-                        clearTimeout(timeoutId);
                         
                         if (dexResponse.ok) {
                             const dexData = await dexResponse.json();
                             if (dexData.pairs && dexData.pairs.length > 0) {
                                 currentPrice = parseFloat(dexData.pairs[0].priceUsd) || 0;
+                                console.log('DexScreener price:', currentPrice);
                             }
                         }
                     } catch (e) {
+                        console.log('DexScreener also failed');
                         currentPrice = 0.000001; // Fallback
                     }
+                }
+                
+                // If still no price, use a demo value
+                if (currentPrice === 0) {
+                    currentPrice = 0.000001;
                 }
                 
                 const marketCap = totalSupply * currentPrice;
@@ -373,10 +428,20 @@
                 const mcapElement = document.getElementById('mcap-value');
                 if (mcapElement && marketCap > 0) {
                     mcapElement.textContent = `$${marketCap.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+                } else if (mcapElement) {
+                    mcapElement.textContent = 'Loading...';
                 }
+                
+                console.log('Data updated:', { totalSupply, currentPrice, marketCap });
                 
             } catch (error) {
                 console.error('Error fetching token data:', error);
+                // Show error state
+                const mcapElement = document.getElementById('mcap-value');
+                const holdersElement = document.getElementById('holders-value');
+                
+                if (mcapElement) mcapElement.textContent = 'Error';
+                if (holdersElement) holdersElement.textContent = 'Error';
             }
         }
         

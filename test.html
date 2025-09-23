@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Connectivity Test</h1>
+    <div id="status">Testing...</div>
+    
+    <script>
+        async function testAPIs() {
+            const statusDiv = document.getElementById('status');
+            let results = '';
+            
+            // Test Jupiter API
+            try {
+                const response = await fetch('/api/jupiter/price?ids=GJAFwWjJ3vnTsrQVabjBVK2TYB1YtRCQXRDfDgUnpump');
+                results += `Jupiter API: ${response.ok ? 'OK' : 'Failed'}\n`;
+            } catch (e) {
+                results += `Jupiter API: Error - ${e.message}\n`;
+            }
+            
+            // Test DexScreener API
+            try {
+                const response = await fetch('/api/dexscreener/tokens/GJAFwWjJ3vnTsrQVabjBVK2TYB1YtRCQXRDfDgUnpump');
+                results += `DexScreener API: ${response.ok ? 'OK' : 'Failed'}\n`;
+            } catch (e) {
+                results += `DexScreener API: Error - ${e.message}\n`;
+            }
+            
+            // Test Helius API
+            try {
+                const response = await fetch('/api/helius/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: '1',
+                        method: 'getHealth'
+                    })
+                });
+                results += `Helius API: ${response.ok ? 'OK' : 'Failed'}\n`;
+            } catch (e) {
+                results += `Helius API: Error - ${e.message}\n`;
+            }
+            
+            statusDiv.innerHTML = `<pre>${results}</pre>`;
+        }
+        
+        testAPIs();
+    </script>
+</body>
+</html>
