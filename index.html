@@ -33,10 +33,13 @@
             width: 100vw;
             height: 100vh;
             object-fit: cover;
+            object-position: center;
             position: fixed;
             top: 0;
             left: 0;
             z-index: 1;
+            margin: 0;
+            padding: 0;
         }
         
         .tape {
@@ -65,7 +68,7 @@
         
         .scrolling-text {
             white-space: nowrap;
-            animation: scroll-left 14s linear infinite;
+            animation: scroll-left 20s linear infinite;
         }
         
         @keyframes scroll-left {
@@ -78,7 +81,7 @@
         }
         
         .tape-bottom .scrolling-text {
-            animation: scroll-right 14s linear infinite;
+            animation: scroll-right 20s linear infinite;
         }
         
         @keyframes scroll-right {
@@ -92,7 +95,7 @@
         
         .cards-container {
             position: fixed;
-            bottom: 50px;
+            bottom: 120px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -137,7 +140,7 @@
             top: 60px;
             right: 20px;
             display: flex;
-            gap: 15px;
+            gap: 5px;
             z-index: 4;
         }
         
@@ -165,36 +168,65 @@
         .money-center-left {
             top: 45%;
             left: 30px;
-            width: 80px;
+            width: 140px;
             opacity: 0.6;
         }
         
         .always-up-center {
             top: 35%;
             left: 50%;
-            width: 90px;
+            width: 160px;
             opacity: 0.5;
         }
         
         .subscribe-center-right {
             top: 55%;
             right: 40px;
-            width: 85px;
+            width: 150px;
             opacity: 0.7;
         }
         
         .money-bottom-center {
             bottom: 250px;
             left: 35%;
-            width: 75px;
+            width: 130px;
             opacity: 0.4;
         }
         
         .always-up-left-middle {
             top: 25%;
             left: 80px;
-            width: 70px;
+            width: 120px;
             opacity: 0.6;
+        }
+        
+        /* Additional decorative elements */
+        .money-top-right {
+            top: 15%;
+            right: 120px;
+            width: 110px;
+            opacity: 0.5;
+        }
+        
+        .subscribe-bottom-left {
+            bottom: 30%;
+            left: 60px;
+            width: 135px;
+            opacity: 0.6;
+        }
+        
+        .always-up-right {
+            top: 60%;
+            right: 90px;
+            width: 125px;
+            opacity: 0.4;
+        }
+        
+        .money-center-right {
+            top: 65%;
+            right: 200px;
+            width: 100px;
+            opacity: 0.5;
         }
     </style>
 </head>
@@ -211,12 +243,14 @@
 
     <!-- Decorative images scattered around - reduced and positioned away from elements -->
     <img src="img/$200month.png" alt="$200 Month" class="decorative-img money-center-left">
-    <img src="img/$200month.png" alt="$200 Month" class="decorative-img money-bottom-center">
+    <img src="img/$200month.png" alt="$200 Month" class="decorative-img money-top-right">
+    <img src="img/$200month.png" alt="$200 Month" class="decorative-img money-center-right">
     
-    <img src="img/Alwats goes up.png" alt="Always Goes Up" class="decorative-img always-up-center">
     <img src="img/Alwats goes up.png" alt="Always Goes Up" class="decorative-img always-up-left-middle">
+    <img src="img/Alwats goes up.png" alt="Always Goes Up" class="decorative-img always-up-right">
     
     <img src="img/Subscribe .png" alt="Subscribe" class="decorative-img subscribe-center-right">
+    <img src="img/Subscribe .png" alt="Subscribe" class="decorative-img subscribe-bottom-left">
 
     <div class="tape tape-top">
         <div class="scrolling-text">MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • MONTHLY SUBSCRIPTION • </div>
